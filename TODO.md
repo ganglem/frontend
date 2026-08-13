@@ -4,6 +4,7 @@
 
 - UI, routing, session handling, and every page's logic are built and typecheck/lint/build clean against **v2**'s documented schemas.
 - Auth uses the official **`keycloak-js`** adapter (Authorization Code + PKCE), not a hand-rolled implementation — see `src/lib/keycloak.ts` and `src/hooks/useAuth.tsx`.
+- `NEXT_PUBLIC_API_BASE_URL` and `NEXT_PUBLIC_KEYCLOAK_URL` are **required, no hardcoded fallback**. Both are checked lazily (on first real use, not on page load), so a missing value won't fail the build or block `dev:noauth` — it'll throw a clear `Missing required environment variable: ...` the first time the app actually tries to call the API or Keycloak. If something's silently not working, check the browser console for that error first.
 - **Nothing has been run against a live Keycloak instance or a live API** — verification so far is static (`tsc`, `eslint`, `next build`) plus reading `api-docs-v2.json`. There's no automated test suite in this app yet (`old/` had vitest tests for the v1 client; none were ported).
 - `npm run dev:noauth` works today and exercises the full UI with fixture data, bypassing both Keycloak and the API entirely. Use it to confirm a UI change without needing either dependency up.
 - The one thing guaranteed to need a fix on first real run: the Keycloak `client_id` and redirect URI below are guesses, not confirmed values.
