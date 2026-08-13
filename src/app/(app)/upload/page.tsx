@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNamespaceDatasetOptions } from "@/hooks/useCatalog";
 import { appendDatasetData, createDataset, overwriteDatasetData } from "@/lib/api/datasets";
 import { deriveDatasetName, formatApiError, formatFileSize } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const uploadSchema = z.object({
   namespace: z.string().min(1, "Choose a namespace."),
@@ -165,9 +166,10 @@ export default function UploadPage() {
                 <Label>File</Label>
                 <div
                   {...getRootProps()}
-                  className={`mt-1.5 rounded-2xl border border-dashed px-5 py-8 transition ${
-                    isDragActive ? "border-primary bg-primary/5" : "border-border bg-muted/30"
-                  }`}
+                  className={cn(
+                    "mt-1.5 rounded-2xl border border-dashed px-5 py-8 transition",
+                    isDragActive ? "border-primary bg-primary/5" : "border-border bg-muted/30",
+                  )}
                 >
                   <input {...getInputProps()} />
                   <p className="text-sm font-semibold">

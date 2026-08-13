@@ -6,10 +6,19 @@ import { requireEnv } from "@/lib/env";
 // never issues or proxies them. See api-docs-v2.json's
 // components.securitySchemes.OAuth2AuthorizationCodeBearer for where the
 // URL/realm below come from.
-const KEYCLOAK_URL = requireEnv(
-  "NEXT_PUBLIC_KEYCLOAK_URL",
-  process.env.NEXT_PUBLIC_KEYCLOAK_URL,
-).replace(/\/$/, "");
+let keycloakUrl: string | null = null;
+
+// Deferred until getKeycloak() is actually called - noauth mode never calls
+// it and must be able to load without this set.
+function getKeycloakUrl() {
+  keycloakUrl ??= requireEnv(
+    "NEXT_PUBLIC_KEYCLOAK_URL",
+    process.env.NEXT_PUBLIC_KEYCLOAK_URL,
+  ).replace(/\/$/, "");
+
+  return keycloakUrl;
+}
+
 const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM ?? "datalake";
 
 // Placeholder - confirm the real client_id (and that it's registered as a
@@ -23,7 +32,7 @@ let keycloak: Keycloak | null = null;
 export function getKeycloak() {
   if (!keycloak) {
     keycloak = new Keycloak({
-      url: KEYCLOAK_URL,
+      url: getKeycloakUrl(),
       realm: KEYCLOAK_REALM,
       clientId: KEYCLOAK_CLIENT_ID,
     });

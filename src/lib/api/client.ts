@@ -1,9 +1,17 @@
 import { requireEnv } from "@/lib/env";
 
-const API_BASE_URL = requireEnv(
-  "NEXT_PUBLIC_API_BASE_URL",
-  process.env.NEXT_PUBLIC_API_BASE_URL,
-).replace(/\/$/, "");
+let apiBaseUrl: string | null = null;
+
+// Deferred until first real request, not resolved at module scope - noauth
+// mode never calls request() and must be able to load without this set.
+function getApiBaseUrl() {
+  apiBaseUrl ??= requireEnv(
+    "NEXT_PUBLIC_API_BASE_URL",
+    process.env.NEXT_PUBLIC_API_BASE_URL,
+  ).replace(/\/$/, "");
+
+  return apiBaseUrl;
+}
 
 export function isNoAuthMode() {
   return process.env.NEXT_PUBLIC_AUTH_MODE === "noauth";
@@ -82,7 +90,7 @@ async function request(path: string, options: RequestOptions) {
     headers.set("Authorization", `Bearer ${options.authToken}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...options,
     headers,
   });
