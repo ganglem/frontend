@@ -172,4 +172,5 @@ export interface FrontendSession {
   catalogs: CatalogInfo[];
   catalogId: string;
   expiresAt: number | null;
+  refreshToken: string | null;
 }

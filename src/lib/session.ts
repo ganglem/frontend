@@ -13,6 +13,7 @@ export function createSession(input: {
   catalogs: CatalogInfo[];
   catalogId: string;
   expiresIn?: number;
+  refreshToken?: string | null;
 }): FrontendSession {
   return {
     username: input.username,
@@ -21,6 +22,7 @@ export function createSession(input: {
     catalogs: input.catalogs,
     catalogId: input.catalogId,
     expiresAt: input.expiresIn ? Date.now() + input.expiresIn * 1000 : null,
+    refreshToken: input.refreshToken ?? null,
   };
 }
 

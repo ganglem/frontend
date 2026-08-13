@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Database,
   Download,
@@ -78,7 +78,6 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { toggleSidebar, state } = useSidebar();
   const { session, logout } = useAuth();
 
@@ -156,13 +155,7 @@ export function AppSidebar() {
                     </DropdownMenuLabel>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => {
-                      logout();
-                      router.replace("/login");
-                    }}
-                  >
+                  <DropdownMenuItem variant="destructive" onClick={logout}>
                     <LogOut />
                     Sign out
                   </DropdownMenuItem>

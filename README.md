@@ -10,7 +10,7 @@ This is a from-scratch rebuild targeting API **v2** (`api-docs-v2.json`). The `o
 - **TanStack Query** for server state, **TanStack Table** for the query/preview grid
 - **react-hook-form** + **zod** for every form
 - **shadcn/ui** components on top of **Base UI** primitives (not Radix)
-- Auth: Keycloak, Authorization Code + PKCE (see below)
+- Auth: Keycloak via **`keycloak-js`** (Authorization Code + PKCE, see below)
 
 ## Getting started
 
@@ -35,27 +35,29 @@ NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=datalake-api-testing   # placeholder - see TODO.m
 
 ## Auth, in short
 
-The frontend talks to Keycloak directly (Authorization Code + PKCE) to get a bearer token, then uses that token on every API call — the API only validates tokens (via JWKS), it never issues or proxies them. `/login` handles both the redirect trigger and the callback (`?code=&state=`). See `src/lib/keycloak.ts` for the PKCE mechanics and [TODO.md](./TODO.md) for what still needs confirming against the real Keycloak realm before this works end-to-end.
+The frontend talks to Keycloak directly (Authorization Code + PKCE, via the official `keycloak-js` adapter) to get a bearer token, then uses that token on every API call — the API only validates tokens (via JWKS), it never issues or proxies them. `keycloak-js` also silently re-checks for an existing session on every page load (`public/silent-check-sso.html`), refreshes the token before it expires, and ends the real Keycloak session on sign-out — none of that is hand-rolled. See `src/lib/keycloak.ts`/`src/hooks/useAuth.tsx` for the wiring and [TODO.md](./TODO.md) for what still needs confirming against the real Keycloak realm before this works end-to-end.
 
 ## Project structure
 
 ```
 src/
   app/
-    login/page.tsx        # Keycloak sign-in + OAuth callback
+    login/page.tsx        # sign-in button(s) only - keycloak-js handles the OAuth callback itself
     (app)/                 # authenticated routes, share AppSidebar/AppHeader via layout.tsx
       namespaces/  upload/  query/  datasets/  rollback/  download/  delete/
   components/               # app-specific components (PascalCase - AppSidebar, DataTable, ...)
   components/ui/            # shadcn-managed primitives (kebab-case - don't rename, see AGENTS.md)
   hooks/
-    useAuth.tsx              # session context: sessionStorage persistence, expiry timer, catalog switch
+    useAuth.tsx              # session context: keycloak-js init/refresh/logout, sessionStorage cache, catalog switch
     useCatalog.ts            # TanStack Query read hooks (namespaces/datasets/snapshots)
     useMobile.ts             # shadcn sidebar breakpoint helper
   lib/
     api/                     # one file per API resource (auth, namespaces, datasets, query) + client.ts
-    keycloak.ts              # PKCE + Keycloak redirect/token-exchange, independent of lib/api
+    keycloak.ts              # thin keycloak-js setup (singleton instance, init, login/logout redirects)
     session.ts, format.ts, utils.ts
   types/api.ts               # types mirrored from api-docs-v2.json
+public/
+  silent-check-sso.html      # keycloak-js's hidden-iframe session check, see TODO.md
 ```
 
 Reads go through `useCatalog.ts`'s query hooks; writes are page-local `useMutation` calls into `lib/api/*` followed by `queryClient.invalidateQueries`. Every page with a submit action uses `react-hook-form` + `zod`; the namespace → dataset cascading picker is shared via `useNamespaceDatasetOptions`.
