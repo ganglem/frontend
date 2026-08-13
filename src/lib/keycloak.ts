@@ -1,14 +1,15 @@
 import Keycloak from "keycloak-js";
+import { requireEnv } from "@/lib/env";
 
 // Talks to Keycloak directly (Authorization Code + PKCE) via the official
 // keycloak-js adapter - the lakehouse API only validates tokens via JWKS, it
 // never issues or proxies them. See api-docs-v2.json's
 // components.securitySchemes.OAuth2AuthorizationCodeBearer for where the
 // URL/realm below come from.
-const KEYCLOAK_URL = (process.env.NEXT_PUBLIC_KEYCLOAK_URL ?? "https://keycloak.datalake").replace(
-  /\/$/,
-  "",
-);
+const KEYCLOAK_URL = requireEnv(
+  "NEXT_PUBLIC_KEYCLOAK_URL",
+  process.env.NEXT_PUBLIC_KEYCLOAK_URL,
+).replace(/\/$/, "");
 const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM ?? "datalake";
 
 // Placeholder - confirm the real client_id (and that it's registered as a

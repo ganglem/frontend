@@ -1,7 +1,9 @@
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.datalake").replace(
-  /\/$/,
-  "",
-);
+import { requireEnv } from "@/lib/env";
+
+const API_BASE_URL = requireEnv(
+  "NEXT_PUBLIC_API_BASE_URL",
+  process.env.NEXT_PUBLIC_API_BASE_URL,
+).replace(/\/$/, "");
 
 export function isNoAuthMode() {
   return process.env.NEXT_PUBLIC_AUTH_MODE === "noauth";

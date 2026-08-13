@@ -25,11 +25,13 @@ npm run lint
 Config lives in `.env.local`:
 
 ```bash
-NEXT_PUBLIC_API_BASE_URL=http://localhost:1337       # Lakehouse Gateway API; defaults to https://api.datalake if unset
-NEXT_PUBLIC_KEYCLOAK_URL=https://keycloak.datalake
+NEXT_PUBLIC_API_BASE_URL=http://localhost:1337        # Lakehouse Gateway API - required, no fallback
+NEXT_PUBLIC_KEYCLOAK_URL=https://keycloak.datalake    # required, no fallback
 NEXT_PUBLIC_KEYCLOAK_REALM=datalake
 NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=datalake-api-testing   # placeholder - see TODO.md
 ```
+
+Both URLs are required — `client.ts`/`keycloak.ts` throw a clear error on load if either is missing rather than silently falling back to a guessed default.
 
 `npm run dev:noauth` sets `NEXT_PUBLIC_AUTH_MODE=noauth`, which short-circuits both the API and Keycloak with fixture data — it's the fastest way to work on UI without either dependency running.
 
