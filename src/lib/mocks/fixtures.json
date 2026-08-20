@@ -1,0 +1,170 @@
+{
+  "namespaces": [
+    {
+      "name": "analytics",
+      "description": "Product analytics and event tracking tables.",
+      "datasets": [
+        {
+          "name": "events",
+          "format": "parquet",
+          "description": "Raw client + server event stream.",
+          "location": "s3://dev-team-bucket/analytics/events",
+          "properties": { "owner": "data-eng", "pii": "false" },
+          "totalRecords": 4812093,
+          "schema": [
+            { "name": "event_id", "type": "string", "required": true, "doc": "Unique event id (UUID)." },
+            { "name": "user_id", "type": "string", "required": true, "doc": null },
+            { "name": "event_type", "type": "string", "required": true, "doc": "click, view, purchase, etc." },
+            { "name": "occurred_at", "type": "timestamp", "required": true, "doc": null }
+          ],
+          "snapshots": [
+            { "snapshotId": 4, "parentId": 3, "timestampMs": 1787011200000, "operation": "append", "isCurrent": true },
+            { "snapshotId": 3, "parentId": 2, "timestampMs": 1786838400000, "operation": "append", "isCurrent": false },
+            { "snapshotId": 2, "parentId": 1, "timestampMs": 1786233600000, "operation": "append", "isCurrent": false },
+            { "snapshotId": 1, "parentId": null, "timestampMs": 1784419200000, "operation": "create", "isCurrent": false }
+          ],
+          "rows": [
+            { "event_id": "evt_00931", "user_id": "u_4471", "event_type": "click", "occurred_at": "2026-08-19T09:12:04Z" },
+            { "event_id": "evt_00932", "user_id": "u_2039", "event_type": "view", "occurred_at": "2026-08-19T09:12:31Z" },
+            { "event_id": "evt_00933", "user_id": "u_4471", "event_type": "purchase", "occurred_at": "2026-08-19T09:13:02Z" },
+            { "event_id": "evt_00934", "user_id": "u_8821", "event_type": "view", "occurred_at": "2026-08-19T09:13:47Z" },
+            { "event_id": "evt_00935", "user_id": "u_1187", "event_type": "click", "occurred_at": "2026-08-19T09:14:10Z" },
+            { "event_id": "evt_00936", "user_id": "u_2039", "event_type": "click", "occurred_at": "2026-08-19T09:14:55Z" },
+            { "event_id": "evt_00937", "user_id": "u_9004", "event_type": "signup", "occurred_at": "2026-08-19T09:15:20Z" },
+            { "event_id": "evt_00938", "user_id": "u_1187", "event_type": "view", "occurred_at": "2026-08-19T09:16:01Z" },
+            { "event_id": "evt_00939", "user_id": "u_4471", "event_type": "view", "occurred_at": "2026-08-19T09:16:44Z" },
+            { "event_id": "evt_00940", "user_id": "u_8821", "event_type": "purchase", "occurred_at": "2026-08-19T09:17:12Z" },
+            { "event_id": "evt_00941", "user_id": "u_5510", "event_type": "click", "occurred_at": "2026-08-19T09:17:58Z" },
+            { "event_id": "evt_00942", "user_id": "u_9004", "event_type": "view", "occurred_at": "2026-08-19T09:18:26Z" }
+          ]
+        },
+        {
+          "name": "sessions",
+          "format": "parquet",
+          "description": "Derived session rollups from the events table.",
+          "location": "s3://dev-team-bucket/analytics/sessions",
+          "properties": { "owner": "data-eng", "refresh": "hourly" },
+          "totalRecords": 318442,
+          "schema": [
+            { "name": "session_id", "type": "string", "required": true, "doc": null },
+            { "name": "user_id", "type": "string", "required": true, "doc": null },
+            { "name": "started_at", "type": "timestamp", "required": true, "doc": null },
+            { "name": "duration_seconds", "type": "long", "required": false, "doc": "Null if the session is still open." }
+          ],
+          "snapshots": [
+            { "snapshotId": 2, "parentId": 1, "timestampMs": 1786838400000, "operation": "overwrite", "isCurrent": true },
+            { "snapshotId": 1, "parentId": null, "timestampMs": 1784419200000, "operation": "create", "isCurrent": false }
+          ],
+          "rows": [
+            { "session_id": "s_88213", "user_id": "u_4471", "started_at": "2026-08-19T09:12:04Z", "duration_seconds": 842 },
+            { "session_id": "s_88214", "user_id": "u_2039", "started_at": "2026-08-19T09:12:31Z", "duration_seconds": 191 },
+            { "session_id": "s_88215", "user_id": "u_8821", "started_at": "2026-08-19T09:13:47Z", "duration_seconds": 2310 },
+            { "session_id": "s_88216", "user_id": "u_1187", "started_at": "2026-08-19T09:14:10Z", "duration_seconds": null },
+            { "session_id": "s_88217", "user_id": "u_9004", "started_at": "2026-08-19T09:15:20Z", "duration_seconds": 56 },
+            { "session_id": "s_88218", "user_id": "u_5510", "started_at": "2026-08-19T09:17:58Z", "duration_seconds": 1204 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "finance",
+      "description": "Billing, payments, and ledger tables.",
+      "datasets": [
+        {
+          "name": "transactions",
+          "format": "parquet",
+          "description": "Payment processor transaction log.",
+          "location": "s3://dev-team-bucket/finance/transactions",
+          "properties": { "owner": "finance-eng", "pii": "true" },
+          "totalRecords": 902114,
+          "schema": [
+            { "name": "transaction_id", "type": "string", "required": true, "doc": null },
+            { "name": "account_id", "type": "string", "required": true, "doc": null },
+            { "name": "amount", "type": "double", "required": true, "doc": "Minor units converted to decimal." },
+            { "name": "currency", "type": "string", "required": true, "doc": null },
+            { "name": "status", "type": "string", "required": true, "doc": "pending, settled, failed, refunded." }
+          ],
+          "snapshots": [
+            { "snapshotId": 5, "parentId": 4, "timestampMs": 1787011200000, "operation": "append", "isCurrent": true },
+            { "snapshotId": 4, "parentId": 3, "timestampMs": 1786233600000, "operation": "append", "isCurrent": false },
+            { "snapshotId": 3, "parentId": 2, "timestampMs": 1784419200000, "operation": "append", "isCurrent": false },
+            { "snapshotId": 2, "parentId": 1, "timestampMs": 1781827200000, "operation": "overwrite", "isCurrent": false },
+            { "snapshotId": 1, "parentId": null, "timestampMs": 1779235200000, "operation": "create", "isCurrent": false }
+          ],
+          "rows": [
+            { "transaction_id": "txn_51029", "account_id": "acct_3391", "amount": 129.99, "currency": "USD", "status": "settled" },
+            { "transaction_id": "txn_51030", "account_id": "acct_1187", "amount": 42.5, "currency": "USD", "status": "settled" },
+            { "transaction_id": "txn_51031", "account_id": "acct_9042", "amount": 15.0, "currency": "EUR", "status": "pending" },
+            { "transaction_id": "txn_51032", "account_id": "acct_3391", "amount": 89.0, "currency": "USD", "status": "failed" },
+            { "transaction_id": "txn_51033", "account_id": "acct_5510", "amount": 249.0, "currency": "GBP", "status": "settled" },
+            { "transaction_id": "txn_51034", "account_id": "acct_1187", "amount": 12.25, "currency": "USD", "status": "refunded" },
+            { "transaction_id": "txn_51035", "account_id": "acct_8821", "amount": 76.4, "currency": "USD", "status": "settled" },
+            { "transaction_id": "txn_51036", "account_id": "acct_9042", "amount": 500.0, "currency": "EUR", "status": "settled" },
+            { "transaction_id": "txn_51037", "account_id": "acct_3391", "amount": 9.99, "currency": "USD", "status": "settled" },
+            { "transaction_id": "txn_51038", "account_id": "acct_5510", "amount": 33.33, "currency": "GBP", "status": "pending" }
+          ]
+        },
+        {
+          "name": "invoices",
+          "format": "parquet",
+          "description": "Customer invoices generated by billing.",
+          "location": "s3://dev-team-bucket/finance/invoices",
+          "properties": { "owner": "finance-eng" },
+          "totalRecords": 21044,
+          "schema": [
+            { "name": "invoice_id", "type": "string", "required": true, "doc": null },
+            { "name": "customer_id", "type": "string", "required": true, "doc": null },
+            { "name": "amount_due", "type": "double", "required": true, "doc": null },
+            { "name": "due_date", "type": "date", "required": true, "doc": null },
+            { "name": "paid", "type": "boolean", "required": true, "doc": null }
+          ],
+          "snapshots": [
+            { "snapshotId": 1, "parentId": null, "timestampMs": 1784419200000, "operation": "create", "isCurrent": true }
+          ],
+          "rows": [
+            { "invoice_id": "inv_7701", "customer_id": "cust_204", "amount_due": 1200.0, "due_date": "2026-09-01", "paid": false },
+            { "invoice_id": "inv_7702", "customer_id": "cust_512", "amount_due": 340.5, "due_date": "2026-08-25", "paid": true },
+            { "invoice_id": "inv_7703", "customer_id": "cust_098", "amount_due": 89.0, "due_date": "2026-08-30", "paid": false },
+            { "invoice_id": "inv_7704", "customer_id": "cust_204", "amount_due": 25.0, "due_date": "2026-09-05", "paid": false }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "marketing",
+      "description": "Campaign performance and attribution.",
+      "datasets": [
+        {
+          "name": "campaigns",
+          "format": "parquet",
+          "description": "Paid campaign spend and performance by day.",
+          "location": "s3://dev-team-bucket/marketing/campaigns",
+          "properties": { "owner": "growth" },
+          "totalRecords": 5820,
+          "schema": [
+            { "name": "campaign_id", "type": "string", "required": true, "doc": null },
+            { "name": "name", "type": "string", "required": true, "doc": null },
+            { "name": "channel", "type": "string", "required": true, "doc": "search, social, email, display." },
+            { "name": "budget", "type": "double", "required": true, "doc": null },
+            { "name": "clicks", "type": "long", "required": true, "doc": null }
+          ],
+          "snapshots": [
+            { "snapshotId": 2, "parentId": 1, "timestampMs": 1786233600000, "operation": "append", "isCurrent": true },
+            { "snapshotId": 1, "parentId": null, "timestampMs": 1781827200000, "operation": "create", "isCurrent": false }
+          ],
+          "rows": [
+            { "campaign_id": "camp_101", "name": "Fall launch", "channel": "search", "budget": 5000.0, "clicks": 18422 },
+            { "campaign_id": "camp_102", "name": "Retargeting Q3", "channel": "display", "budget": 1200.0, "clicks": 4310 },
+            { "campaign_id": "camp_103", "name": "Newsletter promo", "channel": "email", "budget": 300.0, "clicks": 2110 },
+            { "campaign_id": "camp_104", "name": "Social awareness", "channel": "social", "budget": 2500.0, "clicks": 9871 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sandbox",
+      "description": "Scratch space for testing uploads. Empty by default.",
+      "datasets": []
+    }
+  ]
+}

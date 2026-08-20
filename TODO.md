@@ -47,13 +47,12 @@ In the Keycloak admin console, realm `datalake`:
 
 None of these have been exercised against a live backend — only typechecked against `api-docs-v2.json`'s schemas. Point `NEXT_PUBLIC_API_BASE_URL` at a real instance and walk through:
 
-- **Namespaces** — list, create, edit properties, delete (with and without `force`).
-- **Datasets** — browse, preview rows, view schema/properties/snapshot history.
+- **Namespaces** — list, create, edit properties, row-action delete (with and without `force`).
+- **Datasets** — browse, preview rows, view schema/properties/snapshot history, contextual dataset delete (purge on/off), per-snapshot download, per-snapshot rollback (confirm `currentSnapshotId` updates afterward).
 - **Upload** — create a new dataset from a `.parquet` file, then append/overwrite an existing one.
 - **Query** — run a query, check the debug endpoint.
-- **Rollback** — restore a prior snapshot, confirm `currentSnapshotId` updates.
-- **Download** — export current snapshot and a specific snapshot ID.
-- **Delete** — dataset delete (purge on/off) and namespace delete (force on/off).
+
+Note: rollback, download, and delete are no longer standalone pages — they're contextual actions on Namespaces/Datasets (see `ConfirmDialog` note in AGENTS.md). Test them there.
 
 Watch for response-shape mismatches between what `types/api.ts` declares and what the real API actually returns — the types were derived from the OpenAPI schema, not from a live response, and OpenAPI schemas can drift from reality.
 
@@ -61,7 +60,7 @@ Watch for response-shape mismatches between what `types/api.ts` declares and wha
 
 - **Token refresh is implemented but unverified against real Keycloak.** `hooks/useAuth.tsx` assigns `keycloak.onTokenExpired`, which `keycloak-js` fires based on the token's own `exp` claim; the handler calls `keycloak.updateToken(30)` and updates the session on success, or logs out on failure. This has only been typechecked/built, never run against a real token — confirm during step 2.9 testing that a session actually survives past the first `expires_in` window.
 - **Logout now correctly ends the Keycloak session too** (fixed by the `keycloak-js` swap) — `logout()` calls `keycloak.logout({ redirectUri })`, which hits Keycloak's real `end_session_endpoint`, not just local cleanup. Confirmed logically, not yet tested against a real realm (step 2.8).
-- **Catalog-selection continuity across refresh is a best-effort heuristic.** `useAuth.tsx`'s init reads `loadSession()?.catalogId` and reuses it if it's still in the fresh catalog list, purely to avoid resetting the catalog switcher back to `catalogs[0]` on every silent-check-sso refresh. It doesn't check that the persisted session belonged to the same user — low risk in practice, but worth knowing about if catalog IDs ever collide across accounts.
+- **Catalog-selection continuity across refresh is a best-effort heuristic.** `useAuth.tsx`'s init reads `loadPreferredCatalogId()` (`lib/session.ts` — just a bare catalog ID string in `sessionStorage`, not the full session) and reuses it if it's still in the fresh catalog list, purely to avoid resetting the catalog switcher back to `catalogs[0]` on every silent-check-sso refresh. It doesn't check that the persisted preference belonged to the same user — low risk in practice, but worth knowing about if catalog IDs ever collide across accounts. Note this is deliberately *not* the same storage the raw token used to live in — a real Keycloak session no longer persists its access/refresh token to `sessionStorage` at all (`keycloak-js`'s silent-check-sso re-derives it fresh from Keycloak each load), which shrinks the XSS exposure window; `dev:noauth` still persists its full fixture session since it has no Keycloak session to re-check against.
 - **`getCatalogs()` in `lib/api/auth.ts` is dead code** — catalogs are sourced from `/api/v1/auth/me` instead, and nothing calls `getCatalogs()`. Either wire it in somewhere or remove it.
 - **No automated tests.** `old/` had `api.test.ts`/`session.test.ts`/`utils.test.ts` (vitest) for the v1 client; nothing was ported for v2, and there's no test runner in `package.json` yet.
 - **Verifying in a browser from an agent session may not work.** In the environment this was built in, WSL's `curl`/browser tooling couldn't reach the Windows-hosted `next dev` server (`localhost` forwarding didn't work both directions) — if you hit the same thing, the safest path is asking the human running the actual browser to check, rather than assuming a failed `curl` means the server is broken.

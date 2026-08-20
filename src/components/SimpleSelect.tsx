@@ -29,7 +29,7 @@ export function SimpleSelect({
 }: SimpleSelectProps) {
   return (
     <Select
-      value={value || undefined}
+      value={value}
       onValueChange={(next) => onValueChange(next as string)}
       disabled={disabled || isLoading}
     >

@@ -71,7 +71,7 @@ export function DataTable({
 
   if (!rows.length) {
     return (
-      <Card>
+      <Card className="animate-in fade-in-0 duration-300">
         <CardContent>
           <p className="text-sm text-muted-foreground">{emptyMessage}</p>
         </CardContent>
@@ -80,7 +80,7 @@ export function DataTable({
   }
 
   return (
-    <Card className="overflow-hidden py-0">
+    <Card className="animate-in overflow-hidden py-0 fade-in-0 duration-300">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>

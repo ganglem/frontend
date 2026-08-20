@@ -7,7 +7,14 @@ import { getCurrentUser, NOAUTH_TOKEN } from "@/lib/api/auth";
 import { ApiError, isNoAuthMode } from "@/lib/api/client";
 import { formatApiError } from "@/lib/format";
 import { getKeycloak, initKeycloak, redirectToLogin, redirectToLogout } from "@/lib/keycloak";
-import { clearSession, createSession, loadSession, persistSession } from "@/lib/session";
+import {
+  clearSession,
+  createSession,
+  loadPreferredCatalogId,
+  loadSession,
+  persistPreferredCatalogId,
+  persistSession,
+} from "@/lib/session";
 
 interface AuthContextValue {
   session: FrontendSession | null;
@@ -92,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Prefer whatever catalog was selected before a refresh, so
         // switching catalogs doesn't get silently reset every reload.
-        const previousCatalogId = loadSession()?.catalogId;
+        const previousCatalogId = loadPreferredCatalogId();
         const catalogId = currentUser.catalogs.some((c) => c.catalog === previousCatalogId)
           ? (previousCatalogId as string)
           : currentUser.catalogs[0].catalog;
@@ -128,7 +135,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    persistSession(session);
+    // noauth has no Keycloak session to silently re-derive from, so the
+    // whole thing has to be persisted. A real login only needs the catalog
+    // preference remembered - see loadPreferredCatalogId's comment.
+    if (isNoAuthMode()) {
+      persistSession(session);
+      return;
+    }
+
+    persistPreferredCatalogId(session.catalogId);
   }, [session, isHydrated]);
 
   const value: AuthContextValue = {

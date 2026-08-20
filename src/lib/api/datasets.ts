@@ -1,4 +1,17 @@
-import { buildQuery, requestBlob, requestJson } from "@/lib/api/client";
+import { buildQuery, isNoAuthMode, requestBlob, requestJson } from "@/lib/api/client";
+import {
+  mockAppendDatasetData,
+  mockCreateDataset,
+  mockDeleteDataset,
+  mockDownloadDatasetData,
+  mockGetDataset,
+  mockListDatasets,
+  mockListSnapshots,
+  mockOverwriteDatasetData,
+  mockPreviewDatasetData,
+  mockRestoreSnapshot,
+  mockUpdateDataset,
+} from "@/lib/mocks/store";
 import type {
   DataWriteResponse,
   DatasetDeleteResponse,
@@ -21,6 +34,10 @@ function datasetPath(session: FrontendSession, namespace: string, dataset: strin
 }
 
 export function listDatasets(session: FrontendSession, namespace: string) {
+  if (isNoAuthMode()) {
+    return mockListDatasets(namespace);
+  }
+
   return requestJson<DatasetsListResponse>(datasetsPath(session, namespace), {
     method: "GET",
     authToken: session.token,
@@ -32,6 +49,10 @@ export function createDataset(
   namespace: string,
   input: { name: string; description?: string; file?: File },
 ) {
+  if (isNoAuthMode()) {
+    return mockCreateDataset(namespace, input);
+  }
+
   const body = new FormData();
   body.append("name", input.name);
 
@@ -51,6 +72,10 @@ export function createDataset(
 }
 
 export function getDataset(session: FrontendSession, namespace: string, dataset: string) {
+  if (isNoAuthMode()) {
+    return mockGetDataset(namespace, dataset);
+  }
+
   return requestJson<DatasetResponse>(datasetPath(session, namespace, dataset), {
     method: "GET",
     authToken: session.token,
@@ -63,6 +88,10 @@ export function updateDataset(
   dataset: string,
   input: DatasetUpdateRequest,
 ) {
+  if (isNoAuthMode()) {
+    return mockUpdateDataset(namespace, dataset, input);
+  }
+
   return requestJson<DatasetResponse>(datasetPath(session, namespace, dataset), {
     method: "PUT",
     body: JSON.stringify(input),
@@ -76,6 +105,10 @@ export function deleteDataset(
   dataset: string,
   purge: boolean,
 ) {
+  if (isNoAuthMode()) {
+    return mockDeleteDataset(namespace, dataset, purge);
+  }
+
   return requestJson<DatasetDeleteResponse>(
     `${datasetPath(session, namespace, dataset)}${buildQuery({ purge })}`,
     {
@@ -92,6 +125,10 @@ export function appendDatasetData(
   file: File,
   createIfNotExists: boolean,
 ) {
+  if (isNoAuthMode()) {
+    return mockAppendDatasetData(namespace, dataset, file);
+  }
+
   const body = new FormData();
   body.append("file", file, file.name);
 
@@ -111,6 +148,10 @@ export function overwriteDatasetData(
   dataset: string,
   file: File,
 ) {
+  if (isNoAuthMode()) {
+    return mockOverwriteDatasetData(namespace, dataset, file);
+  }
+
   const body = new FormData();
   body.append("file", file, file.name);
 
@@ -127,6 +168,10 @@ export async function downloadDatasetData(
   dataset: string,
   snapshotId?: number,
 ): Promise<DownloadResult> {
+  if (isNoAuthMode()) {
+    return mockDownloadDatasetData(namespace, dataset, snapshotId);
+  }
+
   return requestBlob(
     `${datasetPath(session, namespace, dataset)}/data${buildQuery({ snapshot_id: snapshotId })}`,
     {
@@ -143,6 +188,10 @@ export function previewDatasetData(
   dataset: string,
   input: { limit?: number; snapshotId?: number },
 ) {
+  if (isNoAuthMode()) {
+    return mockPreviewDatasetData(namespace, dataset, input);
+  }
+
   return requestJson<PreviewResponse>(
     `${datasetPath(session, namespace, dataset)}/preview${buildQuery({
       limit: input.limit,
@@ -156,6 +205,10 @@ export function previewDatasetData(
 }
 
 export function listSnapshots(session: FrontendSession, namespace: string, dataset: string) {
+  if (isNoAuthMode()) {
+    return mockListSnapshots(namespace, dataset);
+  }
+
   return requestJson<SnapshotListResponse>(
     `${datasetPath(session, namespace, dataset)}/snapshots`,
     {
@@ -171,6 +224,10 @@ export function restoreSnapshot(
   dataset: string,
   snapshotId: number,
 ) {
+  if (isNoAuthMode()) {
+    return mockRestoreSnapshot(namespace, dataset, snapshotId);
+  }
+
   return requestJson<RestoreSnapshotResponse>(
     `${datasetPath(session, namespace, dataset)}/snapshots/${snapshotId}/restore`,
     {

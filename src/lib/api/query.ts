@@ -1,4 +1,5 @@
-import { requestJson } from "@/lib/api/client";
+import { isNoAuthMode, requestJson } from "@/lib/api/client";
+import { mockRunQuery, mockRunQueryDebug } from "@/lib/mocks/store";
 import type { FrontendSession, QueryDebugResponse, QueryRequest, QueryResponse } from "@/types/api";
 
 function queryPath(session: FrontendSession) {
@@ -6,6 +7,10 @@ function queryPath(session: FrontendSession) {
 }
 
 export function runQuery(session: FrontendSession, input: QueryRequest) {
+  if (isNoAuthMode()) {
+    return mockRunQuery(input);
+  }
+
   return requestJson<QueryResponse>(queryPath(session), {
     method: "POST",
     body: JSON.stringify(input),
@@ -14,6 +19,10 @@ export function runQuery(session: FrontendSession, input: QueryRequest) {
 }
 
 export function runQueryDebug(session: FrontendSession, input: QueryRequest) {
+  if (isNoAuthMode()) {
+    return mockRunQueryDebug(input);
+  }
+
   return requestJson<QueryDebugResponse>(`${queryPath(session)}/debug`, {
     method: "POST",
     body: JSON.stringify(input),

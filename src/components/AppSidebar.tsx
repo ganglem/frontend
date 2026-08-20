@@ -4,13 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Database,
-  Download,
-  History,
+  LayoutGrid,
   LogOut,
   PanelLeftIcon,
   Table2,
   TerminalSquare,
-  Trash2,
   Upload,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,6 +21,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Sidebar,
   SidebarContent,
@@ -60,29 +65,19 @@ const navItems = [
     icon: Table2,
   },
   {
-    href: "/rollback",
-    label: "Rollback",
-    icon: History,
-  },
-  {
-    href: "/download",
-    label: "Download",
-    icon: Download,
-  },
-  {
-    href: "/delete",
-    label: "Delete",
-    icon: Trash2,
+    href: "/overview",
+    label: "Overview",
+    icon: LayoutGrid,
   },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { toggleSidebar, state } = useSidebar();
-  const { session, logout } = useAuth();
+  const { session, setCatalog, logout } = useAuth();
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1.5">
           <div className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-primary text-xs font-semibold text-primary-foreground">
@@ -93,6 +88,23 @@ export function AppSidebar() {
             <p className="text-xs text-muted-foreground">Control Center</p>
           </div>
         </div>
+
+        {session ? (
+          <div className="px-2 group-data-[collapsible=icon]:hidden">
+            <Select value={session.catalogId} onValueChange={(value) => setCatalog(value as string)}>
+              <SelectTrigger className="w-full" size="sm">
+                <SelectValue placeholder="Select a catalog" />
+              </SelectTrigger>
+              <SelectContent>
+                {session.catalogs.map((catalog) => (
+                  <SelectItem key={catalog.catalog} value={catalog.catalog}>
+                    {catalog.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : null}
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

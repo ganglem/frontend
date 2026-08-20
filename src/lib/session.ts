@@ -1,6 +1,7 @@
 import type { CatalogInfo, FrontendSession } from "@/types/api";
 
 const STORAGE_KEY = "datalake-frontend.session";
+const CATALOG_PREFERENCE_KEY = "datalake-frontend.catalogId";
 
 export function isSessionExpired(session: FrontendSession) {
   return session.expiresAt !== null && session.expiresAt <= Date.now();
@@ -63,4 +64,20 @@ export function persistSession(session: FrontendSession) {
 
 export function clearSession() {
   window.sessionStorage.removeItem(STORAGE_KEY);
+}
+
+// A real Keycloak login never persists the full session (the token doesn't
+// need to survive a reload - keycloak-js's silent-check-sso re-derives it
+// fresh from Keycloak every time). This just remembers the last catalog
+// picked, so switching catalogs doesn't get silently reset on every reload.
+export function loadPreferredCatalogId(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return window.sessionStorage.getItem(CATALOG_PREFERENCE_KEY);
+}
+
+export function persistPreferredCatalogId(catalogId: string) {
+  window.sessionStorage.setItem(CATALOG_PREFERENCE_KEY, catalogId);
 }

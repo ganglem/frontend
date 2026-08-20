@@ -2,9 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AppHeader } from "@/components/AppHeader";
 import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -29,8 +28,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <AppHeader />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <SidebarTrigger className="m-4 mb-0 md:hidden" />
+        <main className="flex-1 overflow-auto p-8">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -1,4 +1,11 @@
-import { buildQuery, requestJson } from "@/lib/api/client";
+import { buildQuery, isNoAuthMode, requestJson } from "@/lib/api/client";
+import {
+  mockCreateNamespace,
+  mockDeleteNamespace,
+  mockGetNamespace,
+  mockListNamespaces,
+  mockUpdateNamespace,
+} from "@/lib/mocks/store";
 import type {
   BaseListResponse,
   FrontendSession,
@@ -14,6 +21,10 @@ function namespacesPath(session: FrontendSession) {
 }
 
 export function listNamespaces(session: FrontendSession) {
+  if (isNoAuthMode()) {
+    return mockListNamespaces();
+  }
+
   return requestJson<BaseListResponse<NamespaceInfo>>(namespacesPath(session), {
     method: "GET",
     authToken: session.token,
@@ -21,6 +32,10 @@ export function listNamespaces(session: FrontendSession) {
 }
 
 export function createNamespace(session: FrontendSession, input: NamespaceCreateRequest) {
+  if (isNoAuthMode()) {
+    return mockCreateNamespace(input);
+  }
+
   return requestJson<NamespaceResponse>(namespacesPath(session), {
     method: "POST",
     body: JSON.stringify(input),
@@ -29,6 +44,10 @@ export function createNamespace(session: FrontendSession, input: NamespaceCreate
 }
 
 export function getNamespace(session: FrontendSession, namespace: string) {
+  if (isNoAuthMode()) {
+    return mockGetNamespace(namespace);
+  }
+
   return requestJson<NamespaceResponse>(
     `${namespacesPath(session)}/${encodeURIComponent(namespace)}`,
     {
@@ -43,6 +62,10 @@ export function updateNamespace(
   namespace: string,
   input: NamespaceUpdateRequest,
 ) {
+  if (isNoAuthMode()) {
+    return mockUpdateNamespace(namespace, input);
+  }
+
   return requestJson<NamespaceResponse>(
     `${namespacesPath(session)}/${encodeURIComponent(namespace)}`,
     {
@@ -58,6 +81,10 @@ export function deleteNamespace(
   namespace: string,
   force: boolean,
 ) {
+  if (isNoAuthMode()) {
+    return mockDeleteNamespace(namespace, force);
+  }
+
   return requestJson<NamespaceDeleteResponse>(
     `${namespacesPath(session)}/${encodeURIComponent(namespace)}${buildQuery({ force })}`,
     {

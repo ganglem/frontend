@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 import Providers from "./providers"; // Import the provider you just created
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const interHeading = Inter({ subsets: ['latin'], variable: '--font-heading' });
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
-const jetbrainsHeading = JetBrains_Mono({ subsets: ['latin'], variable: '--font-heading' });
 
 export const metadata: Metadata = {
     title: "Create Next App",
@@ -22,8 +22,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 "antialiased",
                 "font-sans",
                 inter.variable,
-                jetbrainsMono.variable,
-                jetbrainsHeading.variable
+                interHeading.variable,
+                jetbrainsMono.variable
             )}
         >
         <body className="min-h-full flex flex-col">
