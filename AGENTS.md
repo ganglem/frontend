@@ -12,6 +12,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Next.js control center for the Lakehouse Gateway API **v2**. See [README.md](./README.md) for the stack/structure overview and [TODO.md](./TODO.md) for the current integration status — read TODO.md before assuming Keycloak or the live API are reachable in whatever environment you're running in.
 
+**There's a deployed version of this app, older than this repo but not stale** — its API-integration layer has moved on with real backend adjustments since, and it carries dark-mode sidebar support plus an Airbus "A" logo this repo doesn't have. If you're working against that deployment (or merging this repo's features into it), see TODO.md section 5 before touching anything API-related or anything in the sidebar — the deployed copies of those are authoritative, not this repo's.
+
 ## Ground truth for the API
 
 `api-docs-v2.json` (repo root) is the actual OpenAPI spec for the API this app talks to — treat its `paths`/`components.schemas`/`components.securitySchemes` as authoritative over any prose in `info.description`, which is stale in places (e.g. it still mentions a `/auth/login` credentials endpoint that isn't in `paths` — that turned out to be irrelevant once the real auth model was confirmed: the frontend talks to Keycloak directly, the API only validates tokens via JWKS). `api-docs-v1.json` is the old API version, for `old/` only.

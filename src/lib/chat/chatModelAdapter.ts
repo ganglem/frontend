@@ -5,8 +5,17 @@ import type {
   ThreadMessage,
 } from "@assistant-ui/react";
 import { sendChatMessage } from "@/lib/api/chat";
+import type { DashboardPath } from "@/hooks/useGeneratedCards";
 import type { FrontendSession } from "@/types/api";
 import type { ChatCardContext, ChatHistoryEntry, ChatVisualizationPayload } from "@/types/chat";
+
+const PATH_LABELS: Record<DashboardPath, string> = {
+  "/namespaces": "Namespaces",
+  "/upload": "Upload",
+  "/query": "Query",
+  "/datasets": "Datasets",
+  "/overview": "Overview",
+};
 
 // Bridges this repo's own /api/chat SSE contract (src/types/chat.ts,
 // src/lib/api/chat.ts) into assistant-ui's ChatModelAdapter shape, so
@@ -35,14 +44,20 @@ interface CreateChatModelAdapterOptions {
   conversationId: string;
   // Read access: the assistant sees what's currently pinned, including its
   // data, not just titles - it can reason about values, not only recreate.
-  getCards: () => ChatCardContext[];
+  // targetPath is included so an update's confirmation can link to where the
+  // card actually lives, which may differ from where the user is chatting
+  // from right now.
+  getCards: () => (ChatCardContext & { targetPath: DashboardPath })[];
+  // Where a newly-created card spawns: wherever the user is chatting from,
+  // not always Overview - read live so it reflects navigation mid-conversation.
+  getTargetPath: () => DashboardPath;
   // Write access: how the assistant creates or edits a dashboard card.
-  onVisualization: (payload: ChatVisualizationPayload) => void;
+  onVisualization: (payload: ChatVisualizationPayload, targetPath: DashboardPath) => void;
   onVisualizationUpdate: (id: string, patch: Partial<Omit<ChatVisualizationPayload, "id">>) => void;
 }
 
 export function createChatModelAdapter(options: CreateChatModelAdapterOptions): ChatModelAdapter {
-  const { getSession, conversationId, getCards, onVisualization, onVisualizationUpdate } = options;
+  const { getSession, conversationId, getCards, getTargetPath, onVisualization, onVisualizationUpdate } = options;
 
   return {
     async *run({ messages, abortSignal }) {
@@ -61,6 +76,8 @@ export function createChatModelAdapter(options: CreateChatModelAdapterOptions): 
       const history = messages.slice(0, -1).map(toHistoryEntry).filter((h): h is ChatHistoryEntry => h !== null);
 
       let text = "";
+      const targetPath = getTargetPath();
+      const targetLabel = PATH_LABELS[targetPath];
 
       for await (const event of sendChatMessage(
         session,
@@ -73,15 +90,19 @@ export function createChatModelAdapter(options: CreateChatModelAdapterOptions): 
             yield { content: [{ type: "text", text }] };
             break;
           case "visualization":
-            onVisualization(event.payload);
-            text += `\n\n📌 Pinned **${event.payload.title}** to your dashboard. [View it on Overview](/overview)`;
+            onVisualization(event.payload, targetPath);
+            text += `\n\n📌 Pinned **${event.payload.title}** to ${targetLabel}. [View it](${targetPath})`;
             yield { content: [{ type: "text", text }] };
             break;
-          case "visualization_update":
+          case "visualization_update": {
+            const target = getCards().find((c) => c.id === event.id);
+            const path = target?.targetPath ?? targetPath;
+            const label = target ? PATH_LABELS[target.targetPath] : targetLabel;
             onVisualizationUpdate(event.id, event.patch);
-            text += `\n\n🔄 Updated a chart on your dashboard. [View it on Overview](/overview)`;
+            text += `\n\n🔄 Updated **${target?.title ?? "a chart"}** on ${label}. [View it](${path})`;
             yield { content: [{ type: "text", text }] };
             break;
+          }
           case "error":
             yield {
               content: [{ type: "text", text: text || event.message }],

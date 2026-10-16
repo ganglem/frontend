@@ -12,6 +12,7 @@ import {
   Upload,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,6 +69,7 @@ const navItems = [
     href: "/overview",
     label: "Overview",
     icon: LayoutGrid,
+    badge: "Beta",
   },
 ];
 
@@ -123,6 +125,14 @@ export function AppSidebar() {
                     >
                       <item.icon />
                       <span>{item.label}</span>
+                      {item.badge ? (
+                        <Badge
+                          variant="outline"
+                          className="ml-auto group-data-[collapsible=icon]:hidden"
+                        >
+                          {item.badge}
+                        </Badge>
+                      ) : null}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

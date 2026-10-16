@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ComponentType, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import * as AssistantUIReact from "@assistant-ui/react";
 import { useLocalRuntime, type AssistantRuntime } from "@assistant-ui/react";
@@ -9,7 +10,7 @@ import { ChatPanelHeader } from "@/components/chat/ChatPanelHeader";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
 import { createChatModelAdapter } from "@/lib/chat/chatModelAdapter";
-import { useGeneratedCards } from "@/hooks/useGeneratedCards";
+import { normalizeDashboardPath, useGeneratedCards } from "@/hooks/useGeneratedCards";
 import { useIsMobile } from "@/hooks/useMobile";
 import { cn } from "@/lib/utils";
 
@@ -52,20 +53,23 @@ function ChatRuntime({ onClear, onClose }: ChatRuntimeProps) {
   const [conversationId] = useState(() => crypto.randomUUID());
   const { session } = useAuth();
   const { cards, addCard, updateCard } = useGeneratedCards();
+  const pathname = usePathname();
 
-  // getSession/getCards read live state on every call rather than closing
-  // over a stale snapshot - this adapter instance lives for this whole
-  // ChatRuntime mount, so it must not freeze session/cards at construction time.
+  // getSession/getCards/getTargetPath read live state on every call rather
+  // than closing over a stale snapshot - this adapter instance lives for this
+  // whole ChatRuntime mount, so it must not freeze session/cards/the current
+  // page at construction time (the user can navigate mid-conversation).
   const adapter = useMemo(
     () =>
       createChatModelAdapter({
         getSession: () => session,
         conversationId,
         getCards: () => cards,
+        getTargetPath: () => normalizeDashboardPath(pathname),
         onVisualization: addCard,
         onVisualizationUpdate: updateCard,
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- session/cards/addCard/updateCard are read live via the getters above, not captured here
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- session/cards/pathname/addCard/updateCard are read live via the getters above, not captured here
     [conversationId],
   );
 
