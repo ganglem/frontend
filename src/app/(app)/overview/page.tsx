@@ -2,13 +2,14 @@
 
 import { SortableCardList } from "@/components/SortableCardList";
 import { PageHeader } from "@/components/PageHeader";
+import { useChatVisualizationCards } from "@/hooks/useGeneratedCards";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { useDatasetsCards } from "@/app/(app)/datasets/page";
 import { useNamespacesCards } from "@/app/(app)/namespaces/page";
 import { useQueryCards } from "@/app/(app)/query/page";
 import { useUploadCards } from "@/app/(app)/upload/page";
 
-const DEFAULT_ORDER = [
+const STATIC_DEFAULT_ORDER = [
   "namespaces-table",
   "upload-form",
   "query-input",
@@ -26,8 +27,13 @@ export default function OverviewPage() {
   const uploadCards = useUploadCards();
   const queryCards = useQueryCards();
   const datasetsCards = useDatasetsCards();
+  const chatCards = useChatVisualizationCards();
 
-  const cards = [...namespacesCards, ...uploadCards, ...queryCards, ...datasetsCards];
+  const cards = [...namespacesCards, ...uploadCards, ...queryCards, ...datasetsCards, ...chatCards];
+  // Chat-generated cards don't exist until runtime, so defaultOrder is
+  // recomputed here rather than a static literal - useSectionOrder's second
+  // effect (see its own comment) picks up ids newly appearing in this array.
+  const defaultOrder = [...STATIC_DEFAULT_ORDER, ...chatCards.map((card) => card.id)];
   const columns = useResponsiveColumns({ base: 1, md: 2, lg: 3 });
 
   return (
@@ -41,7 +47,7 @@ export default function OverviewPage() {
       <div className="mx-auto w-full max-w-7xl">
         <SortableCardList
           storageKey="overview-cards-order"
-          defaultOrder={DEFAULT_ORDER}
+          defaultOrder={defaultOrder}
           cards={cards}
           columns={columns}
         />

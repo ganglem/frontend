@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
 import { Toaster } from "@/components/Toaster";
 import { AuthProvider } from "@/hooks/useAuth";
+import { GeneratedCardsProvider } from "@/hooks/useGeneratedCards";
 import { ToastProvider } from "@/hooks/useToast";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -22,7 +23,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return (
         <QueryClientProvider client={queryClient}>
             <ToastProvider>
-                <AuthProvider>{children}</AuthProvider>
+                <AuthProvider>
+                    <GeneratedCardsProvider>{children}</GeneratedCardsProvider>
+                </AuthProvider>
                 <Toaster />
             </ToastProvider>
             <ReactQueryDevtools initialIsOpen={false} />
