@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Database,
   LayoutGrid,
+  Globe,
   LogOut,
   PanelLeftIcon,
   Table2,
@@ -42,6 +43,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
@@ -70,6 +72,11 @@ const navItems = [
     label: "Overview",
     icon: LayoutGrid,
     badge: "Beta",
+  },
+  {
+    href: "/geomap",
+    label: "Geomap",
+    icon: Globe,
   },
 ];
 
@@ -186,7 +193,7 @@ export function AppSidebar() {
             </SidebarMenuItem>
           ) : null}
 
-          <SidebarMenuItem>
+          <SidebarMenuItem className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col-reverse">
             <SidebarMenuButton
               onClick={toggleSidebar}
               tooltip={state === "collapsed" ? "Expand sidebar" : "Collapse sidebar"}
@@ -194,6 +201,7 @@ export function AppSidebar() {
               <PanelLeftIcon />
               <span>{state === "collapsed" ? "Expand sidebar" : "Collapse sidebar"}</span>
             </SidebarMenuButton>
+            <ThemeToggle />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

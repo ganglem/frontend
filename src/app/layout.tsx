@@ -17,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html
             lang="en"
+            suppressHydrationWarning
             className={cn(
                 "h-full",
                 "antialiased",
@@ -27,8 +28,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             )}
         >
         <body className="min-h-full flex flex-col">
+        {/* Applies the saved theme before first paint to avoid a light flash. */}
+        <script
+            dangerouslySetInnerHTML={{
+                __html: `try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}`,
+            }}
+        />
         <Providers>{children}</Providers>
         </body>
         </html>
     );
-}
+}

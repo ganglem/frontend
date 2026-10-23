@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ComponentType, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ComponentType, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import * as AssistantUIReact from "@assistant-ui/react";
@@ -30,12 +30,9 @@ function ToggleTab({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label="Open the Data Lake Assistant"
-      className="group fixed top-1/2 right-0 z-40 flex -translate-y-1/2 items-center gap-2 rounded-l-2xl bg-primary py-3 pr-2 pl-3 text-primary-foreground shadow-lg transition-transform duration-300 ease-bounce hover:-translate-x-1"
+      className="fixed top-4 right-4 z-40 flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-1 ring-white/20 transition-transform duration-300 ease-bounce hover:scale-110 active:scale-95"
     >
-      <Sparkles className="size-4" />
-      <span className="rotate-180 text-xs font-medium tracking-wide [writing-mode:vertical-rl]">
-        Ask the data
-      </span>
+      <Sparkles className="size-5" />
     </button>
   );
 }
@@ -85,6 +82,45 @@ function ChatRuntime({ onClear, onClose }: ChatRuntimeProps) {
   );
 }
 
+const DEFAULT_WIDTH = 368;
+const MIN_WIDTH = 320;
+
+// Drag handle on the panel's left edge: pointer capture keeps the drag alive
+// even when the cursor leaves the 6px hit area. Double-click toggles between
+// the default width and roughly half the viewport.
+function ResizeHandle({ width, onResize }: { width: number; onResize: (w: number) => void }) {
+  const clamp = (w: number) => Math.max(MIN_WIDTH, Math.min(w, window.innerWidth - 48));
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = width;
+    const target = e.currentTarget;
+    target.setPointerCapture(e.pointerId);
+
+    const move = (ev: PointerEvent) => onResize(clamp(startWidth + (startX - ev.clientX)));
+    const up = () => {
+      target.removeEventListener("pointermove", move);
+      target.removeEventListener("pointerup", up);
+    };
+    target.addEventListener("pointermove", move);
+    target.addEventListener("pointerup", up);
+  };
+
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize assistant"
+      onPointerDown={onPointerDown}
+      onDoubleClick={() => onResize(width > DEFAULT_WIDTH + 40 ? DEFAULT_WIDTH : clamp(window.innerWidth / 2))}
+      className="group absolute inset-y-0 left-0 z-10 flex w-3 cursor-col-resize touch-none items-center justify-center"
+    >
+      <span className="h-10 w-1 rounded-full bg-foreground/20 opacity-0 transition-opacity group-hover:opacity-100" />
+    </div>
+  );
+}
+
 // Mounted once in (app)/layout.tsx, a sibling of AppSidebar/SidebarInset.
 // Styled like the app's other floating cards (Card's own rounded-[4xl]/
 // shadow-sm/ring treatment) but docked to the viewport edge like a sidebar,
@@ -93,7 +129,9 @@ function ChatRuntime({ onClear, onClose }: ChatRuntimeProps) {
 export function ChatPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
+  const [width, setWidth] = useState(DEFAULT_WIDTH);
   const isMobile = useIsMobile();
+  const handleResize = useCallback((w: number) => setWidth(w), []);
 
   const panelBody = (
     <ChatRuntime
@@ -123,12 +161,15 @@ export function ChatPanel() {
 
   return (
     <div
+      data-slot="chat-panel"
+      style={{ width }}
       className={cn(
-        "fixed inset-y-4 right-4 z-40 flex w-[23rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden",
+        "fixed top-4 right-4 z-40 flex h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] origin-top-right flex-col overflow-hidden",
         "rounded-[min(var(--radius-4xl),24px)] bg-card shadow-xl ring-1 ring-foreground/5 dark:ring-foreground/10",
-        "animate-in fade-in-0 zoom-in-95 slide-in-from-right-6 duration-300 ease-bounce",
+        "animate-in fade-in-0 zoom-in-[0.15] duration-300 ease-bounce",
       )}
     >
+      <ResizeHandle width={width} onResize={handleResize} />
       {panelBody}
     </div>
   );

@@ -172,3 +172,59 @@
 @custom-variant data-open (&:where([data-state="open"], [data-open]:not([data-open="false"])));
 
 @custom-variant data-closed (&:where([data-state="closed"], [data-closed]:not([data-closed="false"])));
+
+/* Liquid-glass treatment for floating UI, app-wide. 50% translucent surface,
+   heavy blur, a bright top edge and soft inner highlight for the "glass" feel. */
+[data-sidebar="sidebar"],
+[data-slot="chat-panel"],
+[data-slot="card"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"] {
+  background-color: color-mix(in oklab, var(--card) 50%, transparent);
+  backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 35%),
+    inset 0 0 0 1px oklch(1 0 0 / 12%),
+    0 2px 8px oklch(0 0 0 / 12%);
+  isolation: isolate;
+}
+
+[data-slot="select-content"] [data-slot="select-scroll-up-button"],
+[data-slot="select-content"] [data-slot="select-scroll-down-button"] {
+  background-color: transparent;
+}
+
+/* Chat body goes see-through with the panel; bubbles stay opaque for legibility. */
+[data-slot="chat-panel"] .aui-thread-root,
+[data-slot="chat-panel"] .aui-thread-viewport-footer {
+  background-color: transparent;
+}
+
+[data-slot="chat-panel"] [data-slot="aui_assistant-message-content"] {
+  background-color: var(--card);
+  border-radius: var(--radius-2xl);
+  padding: 0.5rem 1rem;
+  margin-inline: 0.25rem;
+  box-shadow: 0 1px 2px oklch(0 0 0 / 15%);
+}
+
+/* Chat panel scrolls without a visible scrollbar. */
+[data-slot="chat-panel"] * {
+  scrollbar-width: none;
+}
+[data-slot="chat-panel"] *::-webkit-scrollbar {
+  display: none;
+}
+
+/* Nav items inside the sidebar card get their own small glass pane on
+   hover/active, so the menu itself reads as frosted instead of a flat fill. */
+[data-sidebar="sidebar"] [data-slot="sidebar-menu-button"]:hover,
+[data-sidebar="sidebar"] [data-slot="sidebar-menu-button"][data-active] {
+  background-color: oklch(1 0 0 / 18%);
+  backdrop-filter: blur(12px) saturate(1.6);
+  box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 30%);
+}
+.dark [data-sidebar="sidebar"] [data-slot="sidebar-menu-button"]:hover,
+.dark [data-sidebar="sidebar"] [data-slot="sidebar-menu-button"][data-active] {
+  background-color: oklch(1 0 0 / 10%);
+}
